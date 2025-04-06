@@ -1,0 +1,50 @@
+# .bashrc_custom
+
+# Color scheme
+__HOSTNAME=$(hostname)
+if [[ "$__HOSTNAME" == *bastion* ]]; then
+	ColorArray=(130 136 142 166 172 178 202 208 214) # Orange
+elif [[ "$__HOSTNAME" == *manager* ]]; then
+	ColorArray=(093 127 129 153 165 199 201 177 213) # Purple
+elif [[ "$__HOSTNAME" == *localhost* ]]; then
+	ColorArray=(196) # Red
+else
+	ColorArray=(002 028 034 040 046 064 082 106 112) # Green
+fi
+
+# Set node prompt color
+prompt_color=${ColorArray[$(($(hostname | cksum | awk '{print $1}') % ${#ColorArray[@]}))]}m
+
+# Set node prompt background color
+if [[ -r /sys/hypervisor/uuid ]] && grep -q '^ec2' /sys/hypervisor/uuid; then
+	prompt_bg_color=48
+else
+	prompt_bg_color=38
+fi
+
+# Custom prompt
+# If you want to specify the color, change $prompt_color and redefine PS1 in .bashrc_custom_LOCAL.
+PS1=''
+PS1+='\[\e[1;$prompt_bg_color;5;$prompt_color\]$(hostname | rev | cut -d"." -f2- | rev)\[\e[0m\] ' # hostname
+PS1+='\[\e[34m\]\u\[\e[0m\] ' # username
+PS1+='\[\e[34m\]\t\[\e[0m\] ' # time
+PS1+='\[\e[36m\]\w\[\e[0m\] ' # current directory
+PS1+='\n\$ '
+
+# Show exitcode
+function __show_exitcode() {
+	local ret=$?
+	(( ret != 0 )) && echo -e "\e[1;31mExit $ret\e[0m"
+	echo
+}
+
+PROMPT_COMMAND='__show_exitcode'
+
+# Alias
+alias a='echo -e "\e[1;38;5;002m[$USER session time: `ps -o etime= -p $(ps -o ppid= -p $$) | xargs `]\e[0m`uptime`"'
+alias rs='source $HOME/.bashrc && echo ".bashrc reloaded"'
+
+# Source bashrc_custom_local definitions
+if [ -f "$HOME/dotfiles/.bashrc_custom_LOCAL" ]; then
+	source "$HOME/dotfiles/.bashrc_custom_LOCAL"
+fi

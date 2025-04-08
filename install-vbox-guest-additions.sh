@@ -22,7 +22,7 @@ fi
 
 # インストール
 echo "Guest Additions をインストール中..."
-sh /mnt/cdrom/VBoxLinuxAdditions.run
+sh /mnt/cdrom/VBoxLinuxAdditions-arm64.run
 
 # アンマウント
 echo "マウント解除..."
